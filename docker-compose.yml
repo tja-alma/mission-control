@@ -1,0 +1,10 @@
+services:
+  mc-grid:
+    build: .
+    ports:
+      - "127.0.0.1:3500:3500"
+      - "100.122.171.15:3500:3500"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=3500

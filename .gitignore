@@ -1,1 +1,3 @@
-node_modules/\ndata/
+node_modules
+dist
+data/\ndata/
