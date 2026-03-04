@@ -22,6 +22,8 @@ import {
   getMonitorSlots,
   getAllMonitorsFlat,
   findMonitorByScreenId,
+  getLastLayout,
+  setLastLayout,
 } from "./session.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -253,6 +255,9 @@ app.post("/api/layouts/:name/apply", (c) => {
 
     appliedMonitors.push(screenId);
   }
+
+  // Track the last applied layout for auto-restore
+  setLastLayout(name);
 
   return c.json({ ok: true, applied_monitors: appliedMonitors });
 });
