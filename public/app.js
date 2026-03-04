@@ -106,11 +106,6 @@
     var rows = grid[0];
     var cols = grid[1];
 
-    if (rows === 1 && cols === 1) {
-      container.style.display = "none";
-      return;
-    }
-
     container.style.display = "grid";
     container.style.gridTemplateRows = "repeat(" + rows + ", 1fr)";
     container.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
