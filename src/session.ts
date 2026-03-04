@@ -226,3 +226,14 @@ export function findMonitorByScreenId(screenId: string): Monitor | undefined {
   }
   return undefined;
 }
+
+// Last layout tracking
+let lastLayout: string | null = null;
+
+export function getLastLayout(): string | null {
+  return lastLayout;
+}
+
+export function setLastLayout(name: string): void {
+  lastLayout = name;
+}
