@@ -299,6 +299,62 @@ app.get(
                 screenId,
               })
             );
+
+            // Auto-restore last layout if available
+            const lastLayoutName = getLastLayout();
+            if (lastLayoutName) {
+              const layoutFilePath = join(layoutDir, `${lastLayoutName}.json`);
+              if (existsSync(layoutFilePath)) {
+                try {
+                  const layout = JSON.parse(readFileSync(layoutFilePath, "utf-8")) as {
+                    monitors: Record<string, {
+                      monitor_id: number;
+                      grid: [number, number];
+                      slots: Record<string, { tabs: Array<{ url: string }>; active_tab: number }>;
+                    }>;
+                  };
+
+                  const monitorLayout = layout.monitors[screenId];
+                  if (monitorLayout) {
+                    const grid = monitorLayout.grid;
+
+                    // Send split command
+                    clearMonitorSlots(monitorId);
+                    setMonitorGrid(monitorId, grid);
+                    ws.send(JSON.stringify({ type: "split", grid, monitorId }));
+
+                    // Load slots
+                    const total = grid[0] * grid[1];
+                    for (let i = 0; i < total; i++) {
+                      const letter = String.fromCharCode(65 + i);
+                      const slotId = monitorId + letter;
+                      const slotLayout = monitorLayout.slots[letter];
+                      if (slotLayout && slotLayout.tabs.length > 0) {
+                        for (let t = 0; t < slotLayout.tabs.length; t++) {
+                          const tab = slotLayout.tabs[t];
+                          if (tab.url) {
+                            setSlotUrl(slotId, tab.url, t);
+                          }
+                        }
+                        // Switch to saved active tab
+                        if (slotLayout.active_tab >= 0 && slotLayout.active_tab < slotLayout.tabs.length) {
+                          switchSlotTab(slotId, slotLayout.active_tab);
+                        }
+                        const finalInfo = getSlotInfo(slotId);
+                        ws.send(JSON.stringify({
+                          type: "loadAll",
+                          slot: slotId,
+                          tabs: finalInfo.tabs,
+                          active_tab: finalInfo.active_tab,
+                        }));
+                      }
+                    }
+                  }
+                } catch {
+                  // Ignore layout restore errors
+                }
+              }
+            }
           }
         } catch {
           ws.send(JSON.stringify({ error: "invalid json" }));
